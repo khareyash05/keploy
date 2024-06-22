@@ -11,7 +11,10 @@ sudo rm -rf keploy/
 # Start keploy in record mode.
 docker build -t django-postgres .
 
-
+# Configure keploy
+sudo -E env PATH=$PATH ./../../keployv2 config --generate
+sed -i 's/global: {}/global: {"header": {"Allow":[]}}/' "./keploy.yml"
+sleep 5  # Allow time for configuration to apply
 
 container_kill() {
     pid=$(pgrep -n keploy)
@@ -71,7 +74,7 @@ done
 
 # Start the keploy in test mode.
 test_container="django_postgres_test"
-sudo -E env PATH=$PATH ./../../keployv2 test -c 'docker run -p8000:8000 --net keploy-network --name django_postgres_test django-postgres' --containerName "$test_container" --apiTimeout 60 --delay 20 --generateGithubActions=false &> "${test_container}.txt"
+sudo -E env PATH=$PATH ./../../keployv2 test -c "docker run -p8000:8000 --net keploy-network --name $test_container django-postgres" --containerName "$test_container" --apiTimeout 60 --delay 20 --generateGithubActions=false &> "${test_container}.txt"
 
 if grep "ERROR" "${test_container}.txt"; then
     echo "Error found in pipeline..."

@@ -2,21 +2,34 @@
 
 source ./../../../.github/workflows/test_workflow_scripts/test-iid.sh
 
-# Start mongo before starting keploy.
-docker run -p 6000:5432 --rm --name postgres -e POSTGRES_PASSWORD=my-secret-pw -d postgres:latest
+# Checkout to the specified branch
+git fetch origin
+git checkout native-linux
 
-# Check if PostgreSQL is up
-until nc -z -v -w30 localhost 5432
-do
-    echo "Waiting for PostgreSQL to start..."
-    sleep 1
-done
+# Start the postgres database
+docker-compose up -d
+
+# Install dependencies
+pip3 install -r requirements.txt
+
+# Setup environment
+export PYTHON_PATH=./venv/lib/python3.10/site-packages/django
+
+# Database migrations
+python3 manage.py makemigrations
+python3 manage.py migrate
+
+# Configuration and cleanup
+sudo ./../../../keployv2 config --generate
+sudo rm -rf keploy/  # Clean old test data
+config_file="./keploy.yml"
+sed -i 's/global: {}/global: {"header": {"Allow":[],}}/' "$config_file"
+sleep 5  # Allow time for configuration changes
 
 # Check if there is a keploy-config file, if there is, delete it.
 if [ -f "./keploy.yml" ]; then
     rm ./keploy.yml
 fi
-export ConnectionString="root:my-secret-pw@tcp(localhost:5432)/postgres"
 
 send_request() {
     echo "hello from inside"
