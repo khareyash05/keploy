@@ -11,9 +11,6 @@ if [ -f "./keploy.yml" ]; then
 fi
 export ConnectionString="root:my-secret-pw@tcp(localhost:5432)/postgres"
 
-# Update the global noise to ts.
-go build -o django-postgres
-
 send_request() {
     sleep 10
     app_started=false
