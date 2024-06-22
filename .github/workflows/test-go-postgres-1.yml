@@ -1,6 +1,6 @@
 name: Test FastHttp-Postgres 1
 on:
-  workflow_call:
+  pull_request:
 
 jobs:
   test-go-mongo:
