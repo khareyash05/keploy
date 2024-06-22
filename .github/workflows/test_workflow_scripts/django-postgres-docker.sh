@@ -11,6 +11,8 @@ sudo rm -rf keploy/
 # Start keploy in record mode.
 docker build -t django-postgres .
 
+
+
 container_kill() {
     pid=$(pgrep -n keploy)
     echo "$pid Keploy PID"
